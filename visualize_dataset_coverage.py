@@ -1,9 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
-
 from tqdm import tqdm
+
 from src.data import get_task_dir
 
 
@@ -82,7 +82,6 @@ def viz_coverage(
 
 
 if __name__ == "__main__":
-
     dti_tasks = [
         "davis",
         "biosnap",

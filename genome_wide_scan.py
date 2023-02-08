@@ -1,13 +1,13 @@
 import os
 import sys
+
 import numpy as np
 import pandas as pd
 import torch
-
-from tqdm import tqdm
 from Bio import SeqIO
 from rdkit import Chem
 from rdkit.Chem import AllChem
+from tqdm import tqdm
 
 from src.architectures import SimpleCoembedding
 from src.featurizers import MorganFeaturizer, ProtBertFeaturizer
@@ -97,7 +97,7 @@ with open(RESULTS_PATH, "w+") as f, torch.set_grad_enabled(False):
                 batch_dfeat = dfeat.repeat(len(batch_tfeat), 1)
                 batch_tfeat = torch.stack(batch_tfeat, 0)
                 phat = cosine_sim(model, batch_dfeat, batch_tfeat)
-                for (tn, ph) in zip(batch_tname, phat):
+                for tn, ph in zip(batch_tname, phat):
                     f.write(f"{dk}\t{tn}\t{ph}\n")
                 batch_tname = []
                 batch_tfeat = []
@@ -106,6 +106,6 @@ with open(RESULTS_PATH, "w+") as f, torch.set_grad_enabled(False):
             batch_dfeat = dfeat.repeat(len(batch_tfeat), 1)
             batch_tfeat = torch.stack(batch_tfeat, 0)
             phat = cosine_sim(model, batch_dfeat, batch_tfeat)
-            for (tn, ph) in zip(batch_tname, phat):
+            for tn, ph in zip(batch_tname, phat):
                 f.write(f"{dk}\t{tn}\t{ph}\n")
         f.flush()

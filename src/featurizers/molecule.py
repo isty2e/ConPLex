@@ -1,30 +1,24 @@
-import pickle
-import dgl
 import math
-import torch
-import pysmiles
-import deepchem as dc
-import numpy as np
+import pickle
+from pathlib import Path
 
+import deepchem as dc
+import dgl
+import numpy as np
+import pysmiles
+import torch
+from dgl.dataloading import GraphDataLoader
+from dgl.nn import GATConv, GraphConv, SAGEConv, SGConv, TAGConv
+from dgl.nn.pytorch.glob import SumPooling
+from gensim.models import word2vec
+from mol2vec.features import MolSentence, mol2alt_sentence, mol2sentence, sentences2vec
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
-
-from pathlib import Path
-from .base import Featurizer
-from ..utils import get_logger, canonicalize
-
-from mol2vec.features import (
-    mol2alt_sentence,
-    mol2sentence,
-    MolSentence,
-    sentences2vec,
-)
-from gensim.models import word2vec
-from dgl.dataloading import GraphDataLoader
-from dgl.nn import GraphConv, GATConv, SAGEConv, SGConv, TAGConv
-from dgl.nn.pytorch.glob import SumPooling
 from torch.nn import ModuleList
 from torch.nn.functional import one_hot
+
+from ..utils import canonicalize, get_logger
+from .base import Featurizer
 
 logg = get_logger()
 
@@ -43,7 +37,6 @@ class Mol2VecFeaturizer(Featurizer):
         )
 
     def _transform(self, smile: str) -> torch.Tensor:
-
         molecule = Chem.MolFromSmiles(smile)
         sentence = MolSentence(mol2alt_sentence(molecule, self._radius))
         wide_vector = sentences2vec(sentence, self._model, unseen="UNK")
@@ -82,7 +75,8 @@ class MorganFeaturizer(Featurizer):
             DataStructs.ConvertToNumpyArray(features_vec, features)
         except Exception as e:
             logg.error(
-                f"rdkit not found this smiles for morgan: {smile} convert to all 0 features"
+                f"rdkit not found this smiles for morgan: {smile} convert to"
+                " all 0 features"
             )
             logg.error(e)
             features = np.zeros((self.shape,))
@@ -114,9 +108,9 @@ class GNN(torch.nn.Module):
                         GraphConv(
                             in_feats=feature_len if i == 0 else dim,
                             out_feats=dim,
-                            activation=None
-                            if i == n_layer - 1
-                            else torch.relu,
+                            activation=(
+                                None if i == n_layer - 1 else torch.relu
+                            ),
                         )
                     )
                 elif gnn == "gat":
@@ -127,9 +121,9 @@ class GNN(torch.nn.Module):
                         GATConv(
                             in_feats=feature_len if i == 0 else dim,
                             out_feats=dim // num_heads,
-                            activation=None
-                            if i == n_layer - 1
-                            else torch.relu,
+                            activation=(
+                                None if i == n_layer - 1 else torch.relu
+                            ),
                             num_heads=num_heads,
                         )
                     )
@@ -139,9 +133,9 @@ class GNN(torch.nn.Module):
                         SAGEConv(
                             in_feats=feature_len if i == 0 else dim,
                             out_feats=dim,
-                            activation=None
-                            if i == n_layer - 1
-                            else torch.relu,
+                            activation=(
+                                None if i == n_layer - 1 else torch.relu
+                            ),
                             aggregator_type=agg,
                         )
                     )
@@ -151,9 +145,9 @@ class GNN(torch.nn.Module):
                         TAGConv(
                             in_feats=feature_len if i == 0 else dim,
                             out_feats=dim,
-                            activation=None
-                            if i == n_layer - 1
-                            else torch.relu,
+                            activation=(
+                                None if i == n_layer - 1 else torch.relu
+                            ),
                             k=hops,
                         )
                     )
@@ -274,9 +268,9 @@ class MolEFeaturizer(object):
             data = GraphDataset(self.path_to_model, smiles_list, self.gpu)
         dataloader = GraphDataLoader(
             data,
-            batch_size=batch_size
-            if batch_size is not None
-            else len(smiles_list),
+            batch_size=(
+                batch_size if batch_size is not None else len(smiles_list)
+            ),
         )
         all_embeddings = np.zeros((len(smiles_list), self.dim), dtype=float)
         flags = np.zeros(len(smiles_list), dtype=bool)

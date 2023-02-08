@@ -1,15 +1,16 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
 import os
 import pickle as pk
-from types import SimpleNamespace
-from tqdm import tqdm
-from omegaconf import OmegaConf
 from functools import lru_cache
-from .utils import get_logger
+from types import SimpleNamespace
 
+import torch
+import torch.nn as nn
+from omegaconf import OmegaConf
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
+
+from .utils import get_logger
 
 logg = get_logger()
 

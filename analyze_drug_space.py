@@ -1,31 +1,26 @@
 import os
+import pickle as pk
 import sys
 
-from rdkit import Chem
-from rdkit.Chem import AllChem
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pickle as pk
-import torch
-
-from tqdm.notebook import tqdm
-
-import matplotlib.pyplot as plt
 import seaborn as sns
-
-from src.featurizers import MorganFeaturizer, ProtBertFeaturizer
-from src.architectures import SimpleCoembedding
-
+import torch
+from rdkit import Chem
+from rdkit.Chem import AllChem
 from scipy.stats import pearsonr
 from torch.nn import CosineSimilarity
+from tqdm.notebook import tqdm
+
+from src.architectures import SimpleCoembedding
+from src.featurizers import MorganFeaturizer, ProtBertFeaturizer
 
 DEVICE = 6
 MODEL_PATH = "best_models/reverse_margin_best_model.pt"
 
 
 def cosine_similarity(x, y):
-
     cs = CosineSimilarity(dim=0)
     if isinstance(x, np.ndarray):
         x = torch.from_numpy(x)

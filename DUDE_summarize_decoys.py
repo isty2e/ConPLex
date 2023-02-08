@@ -1,7 +1,8 @@
-import sys
 import glob
-import pandas as pd
+import sys
+
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 
 directory = sys.argv[1]

@@ -1,41 +1,39 @@
 import copy
-from time import time
+import json
 import os
 import sys
+import typing as T
+from argparse import ArgumentParser
+from pathlib import Path
+from time import time
+
 import numpy as np
 import pandas as pd
 import torch
-import json
+import torchmetrics
+import wandb
+from omegaconf import OmegaConf
 from torch import nn
 from torch.autograd import Variable
 from torch.utils import data
 from tqdm import tqdm
-import typing as T
-import torchmetrics
-
-from argparse import ArgumentParser
-
-import wandb
-from omegaconf import OmegaConf
-from pathlib import Path
 
 from src import architectures as model_types
 from src.data import (
-    get_task_dir,
     DTIDataModule,
-    TDCDataModule,
     DUDEDataModule,
     EnzPredDataModule,
+    TDCDataModule,
+    get_task_dir,
 )
+from src.margin import MarginScheduledLossFunction
 from src.utils import (
-    set_random_seed,
     config_logger,
-    get_logger,
     get_featurizer,
+    get_logger,
+    set_random_seed,
     sigmoid_cosine_distance_p,
 )
-
-from src.margin import MarginScheduledLossFunction
 
 logg = get_logger()
 
@@ -43,7 +41,9 @@ parser = ArgumentParser(description="PLM_DTI Training.")
 parser.add_argument(
     "--exp-id", required=True, help="Experiment ID", dest="experiment_id"
 )
-parser.add_argument("--config", help="YAML config file", default="configs/default_config.yaml")
+parser.add_argument(
+    "--config", help="YAML config file", default="configs/default_config.yaml"
+)
 
 parser.add_argument(
     "--wandb-proj",
@@ -61,7 +61,10 @@ parser.add_argument(
         "dti_dg",
     ],
     type=str,
-    help="Task name. Could be biosnap, bindingdb, davis, biosnap_prot, biosnap_mol.",
+    help=(
+        "Task name. Could be biosnap, bindingdb, davis, biosnap_prot,"
+        " biosnap_mol."
+    ),
 )
 
 parser.add_argument(
@@ -102,7 +105,6 @@ parser.add_argument(
 
 
 def test(model, data_generator, metrics, device=None, classify=True):
-
     if device is None:
         device = torch.device("cpu")
 
@@ -117,7 +119,6 @@ def test(model, data_generator, metrics, device=None, classify=True):
     model.eval()
 
     for i, batch in tqdm(enumerate(data_generator), total=len(data_generator)):
-
         pred, label = step(model, batch, device)
         if classify:
             label = label.int()
@@ -128,7 +129,7 @@ def test(model, data_generator, metrics, device=None, classify=True):
             met_instance(pred, label)
 
     results = {}
-    for (k, met_instance) in metric_dict.items():
+    for k, met_instance in metric_dict.items():
         res = met_instance.compute()
         results[k] = res
 
@@ -139,7 +140,6 @@ def test(model, data_generator, metrics, device=None, classify=True):
 
 
 def step(model, batch, device=None):
-
     if device is None:
         device = torch.device("cpu")
 
@@ -151,7 +151,6 @@ def step(model, batch, device=None):
 
 
 def contrastive_step(model, batch, device=None):
-
     if device is None:
         device = torch.device("cpu")
 
@@ -384,8 +383,7 @@ def main():
                 {
                     "train/step": (
                         epo * len(training_generator) * config.batch_size
-                    )
-                    + (i * config.batch_size),
+                    ) + (i * config.batch_size),
                     "train/loss": loss,
                 },
                 do_wandb,
@@ -405,7 +403,8 @@ def main():
             do_wandb,
         )
         logg.info(
-            f"Training at Epoch {epo + 1} with loss {loss.cpu().detach().numpy():8f}"
+            f"Training at Epoch {epo + 1} with loss"
+            f" {loss.cpu().detach().numpy():8f}"
         )
         logg.info(f"Updating learning rate to {lr_scheduler.get_lr()[0]:8f}")
 
@@ -416,7 +415,6 @@ def main():
                 enumerate(contrastive_generator),
                 total=len(contrastive_generator),
             ):
-
                 anchor, positive, negative = contrastive_step(
                     model, batch, device
                 )
@@ -431,8 +429,7 @@ def main():
                             epo
                             * len(training_generator)
                             * config.contrastive_batch_size
-                        )
-                        + (i * config.contrastive_batch_size),
+                        ) + (i * config.contrastive_batch_size),
                         "train/c_loss": contrastive_loss,
                     },
                     do_wandb,
@@ -455,10 +452,12 @@ def main():
             )
 
             logg.info(
-                f"Training at Contrastive Epoch {epo + 1} with loss {contrastive_loss.cpu().detach().numpy():8f}"
+                f"Training at Contrastive Epoch {epo + 1} with loss"
+                f" {contrastive_loss.cpu().detach().numpy():8f}"
             )
             logg.info(
-                f"Updating contrastive learning rate to {lr_scheduler_contrastive.get_lr()[0]:8f}"
+                "Updating contrastive learning rate to"
+                f" {lr_scheduler_contrastive.get_lr()[0]:8f}"
             )
             logg.info(
                 f"Updating contrastive margin to {contrastive_loss_fct.margin}"
@@ -469,7 +468,6 @@ def main():
         # Validation
         if epo % config.every_n_val == 0:
             with torch.set_grad_enabled(False):
-
                 val_results = test(
                     model,
                     validation_generator,
@@ -487,7 +485,9 @@ def main():
 
                 if val_results[config.watch_metric] > max_metric:
                     logg.debug(
-                        f"Validation AUPR {val_results[config.watch_metric]:8f} > previous max {max_metric:8f}"
+                        "Validation AUPR"
+                        f" {val_results[config.watch_metric]:8f} > previous"
+                        f" max {max_metric:8f}"
                     )
                     model_max = copy.deepcopy(model)
                     max_metric = val_results[config.watch_metric]

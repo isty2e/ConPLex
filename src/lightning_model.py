@@ -1,8 +1,7 @@
-import torch
-from torch import nn
-
 import pytorch_lightning as pl
+import torch
 import torchmetrics
+from torch import nn
 
 
 class DrugTargetCoembeddingLightning(pl.LightningModule):

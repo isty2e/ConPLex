@@ -1,27 +1,26 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-import dscript
 import os
-import sys
 import pickle as pk
+import sys
+import typing as T
+from functools import lru_cache
+from pathlib import Path
+from types import SimpleNamespace
+
+import dscript
 import pandas as pd
 import pytorch_lightning as pl
-
-
-from types import SimpleNamespace
-from tqdm import tqdm
-from omegaconf import OmegaConf
-from functools import lru_cache
+import torch
+import torch.nn as nn
 from numpy.random import choice
+from omegaconf import OmegaConf
 from sklearn.model_selection import KFold, train_test_split
-from torch.nn.utils.rnn import pad_sequence
 from tdc.benchmark_group import dti_dg_group
+from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
 
 from .featurizers import Featurizer
 from .utils import get_logger
-from pathlib import Path
-import typing as T
 
 logg = get_logger()
 
@@ -150,7 +149,6 @@ class ContrastiveDataset(Dataset):
         return len(self.anchors)
 
     def __getitem__(self, i):
-
         anchorEmb = self.anchor_featurizer(self.anchors[i])
         positiveEmb = self.posneg_featurizer(self.positives[i])
         negativeEmb = self.posneg_featurizer(self.negatives[i])
@@ -172,7 +170,6 @@ class DTIDataModule(pl.LightningDataModule):
         index_col=0,
         sep=",",
     ):
-
         self._loader_kwargs = {
             "batch_size": batch_size,
             "shuffle": shuffle,
@@ -201,7 +198,6 @@ class DTIDataModule(pl.LightningDataModule):
         self.target_featurizer = target_featurizer
 
     def prepare_data(self):
-
         if (
             self.drug_featurizer.path.exists()
             and self.target_featurizer.path.exists()
@@ -243,7 +239,6 @@ class DTIDataModule(pl.LightningDataModule):
         self.target_featurizer.cpu()
 
     def setup(self, stage: T.Optional[str] = None):
-
         self.df_train = pd.read_csv(
             self._data_dir / self._train_path, **self._csv_kwargs
         )
@@ -326,7 +321,6 @@ class TDCDataModule(pl.LightningDataModule):
         index_col=0,
         sep=",",
     ):
-
         self._loader_kwargs = {
             "batch_size": batch_size,
             "shuffle": shuffle,
@@ -353,7 +347,6 @@ class TDCDataModule(pl.LightningDataModule):
         self.target_featurizer = target_featurizer
 
     def prepare_data(self):
-
         dg_group = dti_dg_group(path=self._data_dir)
         dg_benchmark = dg_group.get("bindingdb_patent")
 
@@ -388,7 +381,6 @@ class TDCDataModule(pl.LightningDataModule):
         self.target_featurizer.cpu()
 
     def setup(self, stage: T.Optional[str] = None):
-
         dg_group = dti_dg_group(path=self._data_dir)
         dg_benchmark = dg_group.get("bindingdb_patent")
         dg_name = dg_benchmark["name"]
@@ -468,7 +460,6 @@ class EnzPredDataModule(pl.LightningDataModule):
         index_col=0,
         sep=",",
     ):
-
         self._loader_kwargs = {
             "batch_size": batch_size,
             "shuffle": shuffle,
@@ -510,7 +501,6 @@ class EnzPredDataModule(pl.LightningDataModule):
         ]
 
     def prepare_data(self):
-
         os.makedirs(self._data_dir, exist_ok=True)
 
         kfsplitter = KFold(n_splits=10, shuffle=True, random_state=self._seed)
@@ -557,7 +547,6 @@ class EnzPredDataModule(pl.LightningDataModule):
             )
 
     def setup(self, stage: T.Optional[str] = None):
-
         df_train = pd.read_csv(
             self._data_dir
             / self._data_stem.with_suffix(f".{self._replicate}.train.csv"),
@@ -640,7 +629,6 @@ class DUDEDataModule(pl.LightningDataModule):
         index_col=None,
         sep="\t",
     ):
-
         self._loader_kwargs = {
             "batch_size": batch_size,
             "shuffle": shuffle,
@@ -689,7 +677,6 @@ class DUDEDataModule(pl.LightningDataModule):
     #         self.target_featurizer.write_to_disk(all_targets)
 
     def setup(self, stage: T.Optional[str] = None):
-
         self.df_full = pd.read_csv(
             self._data_dir / Path("full.tsv"), **self._csv_kwargs
         )

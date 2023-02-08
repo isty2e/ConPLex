@@ -1,13 +1,14 @@
-import torch
 import os
 import shutil
 from pathlib import Path
 
+import torch
+
 from ..featurizers import (
-    NullFeaturizer,
     BeplerBergerFeaturizer,
-    ProtBertFeaturizer,
     MorganFeaturizer,
+    NullFeaturizer,
+    ProtBertFeaturizer,
 )
 
 

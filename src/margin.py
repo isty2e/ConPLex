@@ -1,7 +1,8 @@
+from functools import partial
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-from functools import partial
 
 from .utils import sigmoid_cosine_distance_p
 

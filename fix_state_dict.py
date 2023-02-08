@@ -1,7 +1,8 @@
 import sys
+from pathlib import Path
+
 import torch
 
-from pathlib import Path
 from src.architectures import SimpleCoembedding
 
 

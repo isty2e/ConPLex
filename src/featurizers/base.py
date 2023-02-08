@@ -1,12 +1,13 @@
 from __future__ import annotations
-import torch
-import h5py
-import typing as T
-import numpy as np
 
-from tqdm import tqdm
-from pathlib import Path
+import typing as T
 from functools import lru_cache
+from pathlib import Path
+
+import h5py
+import numpy as np
+import torch
+from tqdm import tqdm
 
 from ..utils import get_logger, load_hdf5_parallel
 

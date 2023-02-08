@@ -1,16 +1,21 @@
-import sys
 import os
-import torch
+import sys
 from pathlib import Path
-from .base import Featurizer
-from ..utils import get_logger
 
+import torch
 from dscript.language_model import lm_embed
 from dscript.pretrained import get_pretrained
 
+from ..utils import get_logger
+from .base import Featurizer
+
 logg = get_logger()
 
-MODEL_CACHE_DIR = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','models'))
+MODEL_CACHE_DIR = Path(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "..", "models"
+    )
+)
 
 os.makedirs(MODEL_CACHE_DIR, exist_ok=True)
 
@@ -104,7 +109,7 @@ class ProtBertFeaturizer(Featurizer):
     def __init__(self, save_dir: Path = Path().absolute()):
         super().__init__("ProtBert", 1024, save_dir)
 
-        from transformers import AutoTokenizer, AutoModel, pipeline
+        from transformers import AutoModel, AutoTokenizer, pipeline
 
         self._max_len = 1024
 
@@ -177,7 +182,7 @@ class ProtT5XLUniref50Featurizer(Featurizer):
 
     @staticmethod
     def _get_T5_model():
-        from transformers import T5Tokenizer, T5EncoderModel
+        from transformers import T5EncoderModel, T5Tokenizer
 
         model = T5EncoderModel.from_pretrained(
             "Rostlab/prot_t5_xl_uniref50",

@@ -1,6 +1,7 @@
-from sklearn.model_selection import ParameterGrid
-from omegaconf import OmegaConf
 import os
+
+from omegaconf import OmegaConf
+from sklearn.model_selection import ParameterGrid
 
 wandb_project = "CONPlex_Benchmarking"
 os.makedirs(f"./configs/{wandb_project}", exist_ok=True)
@@ -98,5 +99,6 @@ with open(list_file, "w+") as f:
 bash_file = f"configs/{wandb_project}/benchmark_sweep_run.sh"
 with open(bash_file, "w+") as f:
     f.write(
-        f"simple_gpu_scheduler --gpus {' '.join([str(i) for i in range(N_GPUS)])} < {list_file}"
+        "simple_gpu_scheduler --gpus"
+        f" {' '.join([str(i) for i in range(N_GPUS)])} < {list_file}"
     )

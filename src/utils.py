@@ -1,22 +1,21 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
+import logging as lg
+import multiprocessing as mp
 import os
 import sys
+import typing as T
+from functools import partial
+from pathlib import Path
+
 import h5py
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+import torch
+import torch.nn as nn
 from omegaconf import OmegaConf
-from pathlib import Path
-from functools import partial
-
-import logging as lg
-import typing as T
-import multiprocessing as mp
-
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
 
 logLevels = {0: lg.ERROR, 1: lg.WARNING, 2: lg.INFO, 3: lg.DEBUG}
 LOGGER_NAME = "DTI"
@@ -100,7 +99,8 @@ def smiles2morgan(s, radius=2, nBits=2048):
     except Exception as e:
         logg.error(e)
         logg.error(
-            f"Failed to convert SMILES to Morgan Fingerprint: {s} convert to all 0 features"
+            f"Failed to convert SMILES to Morgan Fingerprint: {s} convert to"
+            " all 0 features"
         )
         features = np.zeros((nBits,))
     return features

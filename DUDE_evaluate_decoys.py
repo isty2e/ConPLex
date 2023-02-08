@@ -1,25 +1,22 @@
 import os
 import sys
-
-import numpy as np
-import pandas as pd
-import scipy
-import torch
-
-from tqdm import tqdm
 from argparse import ArgumentParser
 
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy
 import seaborn as sns
-
+import torch
 from Bio.PDB import PDBParser
 from Bio.PDB.PDBIO import PDBIO
 from Bio.SeqIO.PdbIO import AtomIterator
 from rdkit import Chem
 from rdkit.Chem import AllChem
+from scipy.spatial.distance import cosine
 from sklearn.manifold import TSNE
 from torch.nn import CosineSimilarity
-from scipy.spatial.distance import cosine
+from tqdm import tqdm
 
 from src.utils import get_logger
 
@@ -57,7 +54,8 @@ try:
     decoys = Chem.SDMolSupplier(f"{database_path}/{target}/decoys_final.sdf")
 except OSError:
     raise OSError(
-        f"Need to first gunzip {database_path}/{target}/actives_final.sdf.gz and {database_path}/{target}/decoys_final.sdf"
+        f"Need to first gunzip {database_path}/{target}/actives_final.sdf.gz"
+        f" and {database_path}/{target}/decoys_final.sdf"
     )
     sys.exit(1)
 
@@ -70,8 +68,8 @@ seq = list(AtomIterator(target, structure))[0]
 print(seq)
 
 # Load Model
-from src.architectures import SimpleCoembedding, GoldmanCPI
-from src.featurizers import MorganFeaturizer, ProtBertFeaturizer, ESMFeaturizer
+from src.architectures import GoldmanCPI, SimpleCoembedding
+from src.featurizers import ESMFeaturizer, MorganFeaturizer, ProtBertFeaturizer
 
 drug_featurizer = MorganFeaturizer()
 target_featurizer = ProtBertFeaturizer()
@@ -163,8 +161,9 @@ with torch.set_grad_enabled(False):
 df = pd.DataFrame(
     {
         "scores": active_scores + decoy_scores,
-        "label": (["Active"] * len(active_scores))
-        + (["Decoy"] * len(decoy_scores)),
+        "label": (["Active"] * len(active_scores)) + (
+            ["Decoy"] * len(decoy_scores)
+        ),
     }
 )
 stat, pvalue = scipy.stats.ttest_ind(
