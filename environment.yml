@@ -2,7 +2,7 @@ name: conplex
 channels:
   - pytorch
   - bioconda
-  - defaults
+  - dglteam
   - conda-forge
 dependencies:
   - python
@@ -18,7 +18,6 @@ dependencies:
   - black-jupyter
   - isort
   - jupyter
-  - tdc
   - pytdc
   - rdkit
   - omegaconf
@@ -37,4 +36,4 @@ dependencies:
     - fair-esm
     - dscript
     - pysmiles
-    - git+https://github.com/tbepler/prose
+    - git+https://github.com/OlivierBeq/prose
